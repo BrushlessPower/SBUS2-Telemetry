@@ -35,7 +35,7 @@ Tested with Version 1.8.5
 
 ## Version
 
-0.1		08/28/2018		created
+0.1     created
 
 
 ### Original Code for Atmel Studio 7
