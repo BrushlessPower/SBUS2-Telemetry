@@ -9,12 +9,19 @@ Tested with R7008
 
 ## Tri-State Buffer SN74LVC2G240
 Pin 1 -> PC0 / D14 (Pullup 10k)
+
 Pin 2 -> PD1 / TXD
+
 Pin 3 -> PD0 / RXD
+
 Pin 4 -> GND
+
 Pin 5 -> SBUS Signal
+
 Pin 6 -> R220 -> SBUS Signal
+
 Pin 7 -> PB5 / D13 (Pullup 10k)
+
 Pin 8 -> 3V3
 
 
