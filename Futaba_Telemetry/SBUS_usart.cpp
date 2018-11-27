@@ -19,18 +19,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
 
+#include <Arduino.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "myavr.h"
 #include "SBUS_usart.h"
-#include "usart.h"
 
 
 #define F_CPU                   8000000
+
+#define USART_BAUD              100000  
 
 #define SLOT_DATA_LENGTH        3
 #define NUMBER_OF_FRAMES        4
@@ -43,12 +44,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UART_RXBUFSIZE  30
 #define FRAME_TIME_OUT  200 //ms
 
-
-#define TRANSMIT_PIN  PIN_0 // digital IO C
-#define RECEIVE_PIN   PIN_5 // digital IO B
-#define TRANSMIT_RECEIVE_ENABLE  LOW
-#define TRANSMIT_RECEIVE_DISABLE HIGH
-
 #define SLOT_TIME 90		//165
 #define SLOT_TIME2 165		
 
@@ -56,11 +51,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 uint8_t  swaps_slot_bits[8] = {0,4,2,6,1,5,3,7};
    
 uint8_t toggle  = 0;   
-
-
-//static bool      command_received = false;
-//static uint8_t   command[UART_RXBUFSIZE];
-//static uint8_t   command_length = 9;
 
 // 248 is around 1 ms
 uint8_t  transmit_sequence_timer[15] = {250,250,SLOT_TIME2,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,226,226,226,226,180};
@@ -102,9 +92,7 @@ void sbus_uart_init();
 void sbus_timer_init();
 void start_receiving();
 void enable_receiving();
-void enable_transmiting();
 void disable_receiving();
-void disable_transmiting();
 void start_transmit_sequencer(uint8_t frame_number);
 void sbus2_send_slot(uint8_t slot);
 
@@ -126,21 +114,16 @@ void SBUS2_uart_setup (void (*start_pulse)(uint32_t))
    sbus_uart_init();
    sbus_timer_init();
 
-   PinBasOutput(RECEIVE_PIN);
-   PinCasOutput(TRANSMIT_PIN);
-   PinCasOutput(PIN_4);
-   
-   disable_transmiting();
    disable_receiving();
    
-   UDR = 0xAA;
+   UDR0 = 0xAA;
    response = 0x00;
-   while(!(UCSRA & (1 << UDRE)));
+   while(!(UCSR0A & (1 << UDRE0)));
    
    while ((counter > 1)  && ( response != 0x55 ))
    {
-     response = UDR;
-     while ( UCSRA & (1 << RXC) );
+     response = UDR0;
+     while ( UCSR0A & (1 << RXC0) );
      counter--;
    }      
           
@@ -154,12 +137,6 @@ void SBUS2_uart_setup (void (*start_pulse)(uint32_t))
    interrupts();
    
 }
-/*
-void SBUS2_uart_command_length(uint8_t length )
-{
-   command_length = length;   
-}
-*/
 
 void sbus_uart_init()
 {
@@ -169,29 +146,29 @@ void sbus_uart_init()
 
 #include <util/setbaud.h>
 
-   UBRRH = UBRRH_VALUE;
-   UBRRL = UBRRL_VALUE;
+   UBRR0H = UBRRH_VALUE;
+   UBRR0L = UBRRL_VALUE;
 
 #if USE_2X
-   UCSRA |= (1 << U2X);	// enable double speed operation
+   UCSR0A |= (1 << U2X0);	// enable double speed operation
 #else
-   UCSRA &= ~(1 << U2X);	// disable double speed operation
+   UCSR0A &= ~(1 << U2X0);	// disable double speed operation
 #endif
 
    // set 8E2
-   UCSRC = (1 << UCSZ1) | (1 << UCSZ0);
-   UCSRB &= ~(1 << UCSZ2);
+   UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+   UCSR0B &= ~(1 << UCSZ02);
 
-   UCSRC |= (1 << UPM1);
-   UCSRC |= (1 << USBS);
+   UCSR0C |= (1 << UPM01);
+   UCSR0C |= (1 << USBS0);
 
    // flush receive buffer
-   while ( UCSRA & (1 << RXC) ) UDR;
+   while ( UCSR0A & (1 << RXC0) ) UDR0;
 
-   UCSRB |= (1 << RXEN);
-   UCSRB |= (1 << RXCIE);
-   UCSRB |= (1 << TXEN);
-   UCSRB |= (1 << TXCIE);
+   UCSR0B |= (0 << RXEN0);
+   UCSR0B |= (0 << RXCIE0);
+   UCSR0B |= (1 << TXEN0);
+   UCSR0B |= (1 << TXCIE0);
 }
 
 void sbus_timer_init()
@@ -234,25 +211,17 @@ void start_receiving()
 
 inline void disable_receiving()
 {
-   PinBOutput( RECEIVE_PIN, TRANSMIT_RECEIVE_DISABLE);
+   UCSR0B |= (0 << RXEN0);
+   UCSR0B |= (0 << RXCIE0);
 }
 
 inline void enable_receiving()
 {
-   PinCOutput( TRANSMIT_PIN, TRANSMIT_RECEIVE_DISABLE);
-   PinBOutput( RECEIVE_PIN, TRANSMIT_RECEIVE_ENABLE);
+   UCSR0B |= (1 << RXEN0);
+   UCSR0B |= (1 << RXCIE0);
 }
 
-inline void disable_transmiting()
-{
-   PinCOutput( TRANSMIT_PIN, TRANSMIT_RECEIVE_DISABLE);
-}
 
-inline void enable_transmiting()
-{
-   PinBOutput( RECEIVE_PIN, TRANSMIT_RECEIVE_DISABLE);
-   PinCOutput( TRANSMIT_PIN, TRANSMIT_RECEIVE_ENABLE);
-}
 
 ISR(TIMER2_COMPA_vect)
 {
@@ -273,12 +242,11 @@ inline void IncreaseTimer( int8_t frameNumber)
 ISR (USART_RX_vect)
 {
    uint8_t cdata = 0;
-   
    frame_ready = false;
    TCNT2  = 0; //Reset Timer 2 for new usart time of char
    //enable Timer2 Control Reg B: for receive timeout this is done here because we can only start the timeout after first bye is received
    TCCR2B = 0x03;
-   cdata = UDR;   
+   cdata = UDR0;   
    rxbuf[buffer_index] = cdata;
    buffer_index++;
    if (buffer_index == SBUS_FRAME_SIZE)
@@ -300,21 +268,6 @@ ISR (USART_RX_vect)
 // receive timeout check for set packed length
 void ISR_receive_timeout()
 {   
-/*   if ( buffer_index == command_length )
-   {
-      // -1 don't add crc in crc :-)
-      uint8_t crc = 0;
-      //crc = crc_cal( (uint8_t*)rxbuf, command_length -1);
-      
-      if ( (crc == rxbuf[command_length -1]) || true )
-      {
-         disable_receiving(); // this puts the module in setup mode 
-         // setup command   
-         memcpy(command, (void*)rxbuf, command_length);    
-         command_received = true;
-      }      
-   }
-   */
    buffer_index = 0;
 }
 
@@ -355,18 +308,17 @@ void ISR_transmit()
       // delay to enabling receive again
       OCR2A = transmit_sequence_timer[sequence_count];
       frame_ready = false;  // this will give  ms to collect the servo data
+      buffer_index = 0;
    }
    else
    {
       // reset transmit sequencer
       TCCR2B = 0x00;        //Disbale Timer2 while we set it up
       sequence_count = 0;  // first sequence step delay will be filled in when the transmit sequence is enabled
-
       enable_receiving();
       start_receiving();
    }
    sequence_count++;
-
    TIFR2 = 0x00;          //Timer2 INT Flag Reg: Clear Timer Overflow Flag
 };
 
@@ -399,11 +351,11 @@ void sbus2_send_slot(uint8_t slot)
    {
       
       transmit_data_per_slot_status[slot] = TRANSMITTING;
-      enable_transmiting();
+      //enable_transmiting();
       //sending_slot = &transmit_data_per_slot[slot];
       gl_slot = slot;
       //send first byte
-      UDR = transmit_data_per_slot_data[gl_slot][0]; // the reset will be done by TX ISR
+      UDR0 = transmit_data_per_slot_data[gl_slot][0]; // the reset will be done by TX ISR
       tx_data_counter = 1;
    }
 }
@@ -415,13 +367,13 @@ ISR (USART_TX_vect)
    {
       if ( tx_data_counter < SLOT_DATA_LENGTH ) 
       {
-         UDR = transmit_data_per_slot_data[gl_slot][tx_data_counter];
+         UDR0 = transmit_data_per_slot_data[gl_slot][tx_data_counter];
          tx_data_counter++;
       }
       else
       {
          // disable transmitter line and set data status to empty so that it can be written again
-         disable_transmiting();
+         //disable_transmiting();
          transmit_data_per_slot_status[gl_slot] = EMPTY;
       }
    }   
@@ -520,32 +472,6 @@ void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_fra
    *transmision_dropt_frame = rxbuf[23] & 0x20 ? true : false;
    *failsave = rxbuf[23] & 0x10 ? true : false;
 }
-
-/*
-bool SBUS2_get_command( uint8_t   *p_command )
-{   
-   if (command_received)
-   {  
-      memcpy(p_command, command, command_length);       
-      command_received = false;   
-
-      return true;
-   }
-   return false;
-}
-
-
-void SBUS2_send_command( uint8_t   *p_command )
-{
-   int index = 0;   
-   
-   for( index = 0; index < command_length; index++)
-   {
-      while( !(UCSRA & (1<<UDRE))){}   
-      UDR = p_command[index];      
-   } 
-}
-*/   
 
 int16_t SBUS2_get_servo_data( uint8_t channel )
 {

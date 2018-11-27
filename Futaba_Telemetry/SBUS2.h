@@ -26,9 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void SBUS2_Setup(uint8_t current_port, 
 				 uint8_t temperature_port, 
 				 uint8_t rpm_port, 
-				 uint8_t alarm_port, 
-				 uint8_t current_cal, 
-				 uint8_t NumberOfPoles);
+				 uint8_t alarm_port);
 void SBUS2_loop();
 
 #endif  //_SBUS2_H

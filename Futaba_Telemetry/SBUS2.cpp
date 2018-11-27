@@ -37,21 +37,17 @@ static uint8_t currentPort     = 0;
 static uint8_t temperaturePort = 0;
 static uint8_t rpmPort         = 0;
 static uint8_t alarmPort       = 0;
-static uint8_t currentCal      = 100;
 
 void SBUS2_Setup(uint8_t current_port, 
 				 uint8_t temperature_port, 
 				 uint8_t rpm_port, 
-				 uint8_t alarm_port, 
-				 uint8_t current_cal,
-				 uint8_t number_of_poles
+				 uint8_t alarm_port 
 				 )
 {
    currentPort     = current_port;
    temperaturePort = temperature_port;
    rpmPort         = rpm_port;
    alarmPort       = alarm_port;
-   currentCal      = current_cal;
    SBUS2_uart_setup(do_servo_pulse_callback);
 }
 
@@ -158,7 +154,6 @@ void SBUS2_loop()
                             (uint16_t)10);	    //Voltage   [V]
       }
    }
-   
 }
 
 
