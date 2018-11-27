@@ -14,7 +14,11 @@ Tested with R7008
 
 SBUS2 --- <--- 1K <---Inverter <--- TXD/D1
 
-SBUS2 --------------> Inverter ---> RXD/D0
+      |
+
+      |
+
+      --------------> Inverter ---> RXD/D0
 
 
 ## Arduino IDE
@@ -25,6 +29,7 @@ Tested with Version 1.8.5
 ## Version
 
 0.1     created
+
 0.2     Inverter instead of 3-State Buffer
 
 
