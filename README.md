@@ -13,9 +13,8 @@ Tested with R7008
 ### Inverter Schematic
 
 SBUS2 --- <--- 1K <---Inverter <--- TXD/D1
-      |
-      |
-      --------------> Inverter ---> RXD/D0
+
+SBUS2 --------------> Inverter ---> RXD/D0
 
 
 ## Arduino IDE
