@@ -25,6 +25,8 @@ SBUS2       ---  --- 1K <---Inverter <--- TXD/D1
 
 Tested with Version 1.8.5
 
+With 16MHz Pro Mini -> #include <avr/power.h> and set Clock Prescaler clock_prescale_set (clock_div_2);
+
 
 ## Version
 
