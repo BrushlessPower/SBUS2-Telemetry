@@ -28,9 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SBUS_usart.h"
 
-
-#define F_CPU                   8000000
-
 #define USART_BAUD              100000  
 
 #define SLOT_DATA_LENGTH        3
@@ -40,11 +37,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SBUS_FRAME_SIZE         25
 #define SBUS_CHANNEL_SIZE       11
 
-
 #define UART_RXBUFSIZE  30
 #define FRAME_TIME_OUT  200 //ms
 
-#define SLOT_TIME 90		//165
+#define SLOT_TIME 90		
 #define SLOT_TIME2 165		
 
 
@@ -55,6 +51,7 @@ uint8_t toggle  = 0;
 // 248 is around 1 ms
 uint8_t  transmit_sequence_timer[15] = {250,250,SLOT_TIME2,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,226,226,226,226,180};
 uint8_t  receive_timeout_timer = ( uint8_t ) (248.0 * (FRAME_TIME_OUT / 1000.0));
+
 uint16_t overflow_counter = 0; // should not occur
 
 static volatile uint8_t   rxbuf[UART_RXBUFSIZE];
@@ -245,7 +242,17 @@ ISR (USART_RX_vect)
    frame_ready = false;
    TCNT2  = 0; //Reset Timer 2 for new usart time of char
    //enable Timer2 Control Reg B: for receive timeout this is done here because we can only start the timeout after first bye is received
-   TCCR2B = 0x03;
+   if(F_CPU == 16000000UL){
+    TCCR2B = 0x04;     // 16MHz clock
+   }
+   else if(F_CPU == 8000000UL){
+    TCCR2B = 0x03;     // 8MHz Clock
+   }
+   else{
+    TCCR2B = 0x00;     // Disable Timer
+   }
+  
+
    cdata = UDR0;   
    rxbuf[buffer_index] = cdata;
    buffer_index++;
@@ -335,7 +342,15 @@ void start_transmit_sequencer(uint8_t frame_number)
    timer_ISR = (volatile void    (*)())ISR_transmit;
 
    OCR2A  = transmit_sequence_timer[0]; //set first delay value
-   TCCR2B = 0x03;                       //enable Timer2 Control Reg B: Timer Prescaler set to 128
+   if(F_CPU == 16000000UL){
+    TCCR2B = 0x04;     // 16MHz clock
+   }
+   else if(F_CPU == 8000000UL){
+    TCCR2B = 0x03;     // 8MHz Clock
+   }
+   else{
+    TCCR2B = 0x00;     // Disable Timer
+   }
 
    gl_current_frame = frame_number;
 }

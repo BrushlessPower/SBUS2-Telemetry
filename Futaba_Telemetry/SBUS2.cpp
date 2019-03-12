@@ -38,6 +38,8 @@ static uint8_t temperaturePort = 0;
 static uint8_t rpmPort         = 0;
 static uint8_t alarmPort       = 0;
 
+static int16_t   SBUS_throttle;
+
 void SBUS2_Setup(uint8_t current_port, 
 				 uint8_t temperature_port, 
 				 uint8_t rpm_port, 
@@ -51,6 +53,11 @@ void SBUS2_Setup(uint8_t current_port,
    SBUS2_uart_setup(do_servo_pulse_callback);
 }
 
+void SBUS2_Setup()
+{
+  SBUS2_uart_setup(do_servo_pulse_callback);
+}
+
 void send_RPM(uint16_t RPM)
 {
    int16_t value =  0;
@@ -60,6 +67,17 @@ void send_RPM(uint16_t RPM)
    bytes[2] = value >> 8;
    bytes[1] = value;
    SBUS2_transmit_telemetry_data( rpmPort , bytes);
+}
+
+void send_RPM(uint8_t port, uint16_t RPM)
+{
+   int16_t value =  0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x00, 0x00 };
+
+   value =  RPM / 6;
+   bytes[2] = value >> 8;
+   bytes[1] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
 }
 
 void send_temp125(int16_t temp)
@@ -73,6 +91,17 @@ void send_temp125(int16_t temp)
    SBUS2_transmit_telemetry_data( temperaturePort , bytes);
 }
 
+void send_temp125(uint8_t port, int16_t temp)
+{
+   int16_t value=  0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+
+   value = temp | 0x4000;
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
+}
+
 void send_alarm_as_temp125(int16_t alarm)
 {
    int16_t value=  0;
@@ -84,6 +113,16 @@ void send_alarm_as_temp125(int16_t alarm)
    SBUS2_transmit_telemetry_data( alarmPort , bytes);
 }
 
+void send_alarm_as_temp125(uint8_t port, int16_t alarm)
+{
+   int16_t value=  0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+
+   value = alarm | 0x4000;
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
+}
 
 void send_s1678_current(uint16_t current, uint16_t capacity, uint16_t voltage)
 {
@@ -121,6 +160,42 @@ void send_s1678_current(uint16_t current, uint16_t capacity, uint16_t voltage)
    SBUS2_transmit_telemetry_data( currentPort+2 , bytes);
 }
 
+void send_s1678_current(uint8_t port, uint16_t current, uint16_t capacity, uint16_t voltage)
+{
+   uint16_t value = 0;
+   uint32_t local = 0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+ 
+   
+   // CURRENT
+   local = ((uint32_t)current) * 100 ;
+   value = (uint16_t)local;   
+   if ( value > 0x3FFF )
+   {
+      // max current is 163.83
+      value = 0x3FFF;
+   }  
+   bytes[1] = value >> 8;
+   bytes[1] = bytes[1] | 0x40;
+   bytes[1] = bytes[1] & 0x7F;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
+
+   //VOLTAGE
+   local = ((uint32_t)voltage) * 1;
+   value = (uint16_t)local;   
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port+1 , bytes);
+
+   // CAPACITY
+   local = (uint32_t)capacity;
+   value = (uint16_t)local;   
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port+2 , bytes);
+}
+
 void do_servo_pulse_callback(uint32_t counter)
 {
    do_servo_pulse = true;
@@ -140,6 +215,7 @@ void SBUS2_loop()
       do_servo_pulse = false;
 
       channel = SBUS2_get_servo_data( 2 );
+      SBUS_throttle = channel;
       if (channel != -1 )
       {
          if ( alarmPort != 0 )
@@ -154,6 +230,19 @@ void SBUS2_loop()
                             (uint16_t)10);	    //Voltage   [V]
       }
    }
+}
+
+bool SBUS2_Ready()
+{
+  if (do_servo_pulse)
+   {
+    do_servo_pulse = false;
+    return true;
+   }
+   else{
+    return false;
+   }
+  
 }
 
 
