@@ -242,16 +242,12 @@ ISR (USART_RX_vect)
    frame_ready = false;
    TCNT2  = 0; //Reset Timer 2 for new usart time of char
    //enable Timer2 Control Reg B: for receive timeout this is done here because we can only start the timeout after first bye is received
-   if(F_CPU == 16000000UL){
-    TCCR2B = 0x04;     // 16MHz clock
-   }
-   else if(F_CPU == 8000000UL){
-    TCCR2B = 0x03;     // 8MHz Clock
-   }
-   else{
-    TCCR2B = 0x00;     // Disable Timer
-   }
-  
+   
+#if F_CPU == 16000000L
+  TCCR2B = 0x04;     // 16MHz clock
+#elif F_CPU == 8000000L  
+  TCCR2B = 0x03;     // 8MHz clock
+#endif
 
    cdata = UDR0;   
    rxbuf[buffer_index] = cdata;
@@ -342,15 +338,12 @@ void start_transmit_sequencer(uint8_t frame_number)
    timer_ISR = (volatile void    (*)())ISR_transmit;
 
    OCR2A  = transmit_sequence_timer[0]; //set first delay value
-   if(F_CPU == 16000000UL){
-    TCCR2B = 0x04;     // 16MHz clock
-   }
-   else if(F_CPU == 8000000UL){
-    TCCR2B = 0x03;     // 8MHz Clock
-   }
-   else{
-    TCCR2B = 0x00;     // Disable Timer
-   }
+   
+#if F_CPU == 16000000L
+  TCCR2B = 0x04;     // 16MHz clock
+#elif F_CPU == 8000000L  
+  TCCR2B = 0x03;     // 8MHz clock
+#endif
 
    gl_current_frame = frame_number;
 }
