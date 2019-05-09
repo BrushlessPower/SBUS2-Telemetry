@@ -5,7 +5,7 @@ Arduino Library for sending Futaba SBUS2 Telemetry based on Atmega 328P (Atmega3
 
 Tested with Arduino Pro Mini with 8MHz and 16MHz -> with external Inverters
 
-Tested with Futaba T14SG;T18MZ and T10J
+Tested with Futaba T14SG; T18MZ and T10J
 
 Tested with R7008 and R3006SB
 
