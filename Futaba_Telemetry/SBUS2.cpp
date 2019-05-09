@@ -23,24 +23,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "SBUS_usart.h"
 
 #define SBUS2_TEL_DATA_SIZE        3
-#define CURRENT_SENSOR_SLOT     0x04
-#define TEMPERATURE_SENSOR_SLOT 0x0A
-#define RPM_SENSOR_SLOT         0x0A
+//#define CURRENT_SENSOR_SLOT     0x04
+//#define TEMPERATURE_SENSOR_SLOT 0x0A
+//#define RPM_SENSOR_SLOT         0x0A
 
-static void     do_servo_pulse_callback(uint32_t counter);
+//static void     do_servo_pulse_callback(uint32_t counter);
 
 // absolute timer for capacity calculation
-static volatile uint32_t  absTime        = 0;
-static volatile bool      do_servo_pulse = false;
+//static volatile uint32_t  absTime        = 0;
+//static volatile bool      do_servo_pulse = false;
 
-static uint8_t currentPort     = 0;
+/*static uint8_t currentPort     = 0;
 static uint8_t temperaturePort = 0;
 static uint8_t rpmPort         = 0;
-static uint8_t alarmPort       = 0;
+static uint8_t alarmPort       = 0;*/
 
-static int16_t   SBUS_throttle;
+//static int16_t   SBUS_throttle;
 
-void SBUS2_Setup(uint8_t current_port, 
+/*void SBUS2_Setup(uint8_t current_port, 
 				 uint8_t temperature_port, 
 				 uint8_t rpm_port, 
 				 uint8_t alarm_port 
@@ -51,14 +51,14 @@ void SBUS2_Setup(uint8_t current_port,
    rpmPort         = rpm_port;
    alarmPort       = alarm_port;
    SBUS2_uart_setup(do_servo_pulse_callback);
-}
+}*/
 
 void SBUS2_Setup()
 {
-  SBUS2_uart_setup(do_servo_pulse_callback);
+  SBUS2_uart_setup(/*do_servo_pulse_callback*/);
 }
 
-void send_RPM(uint16_t RPM)
+/*void send_RPM(uint16_t RPM)
 {
    int16_t value =  0;
    uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x00, 0x00 };
@@ -67,7 +67,7 @@ void send_RPM(uint16_t RPM)
    bytes[2] = value >> 8;
    bytes[1] = value;
    SBUS2_transmit_telemetry_data( rpmPort , bytes);
-}
+}*/
 
 void send_RPM(uint8_t port, uint16_t RPM)
 {
@@ -80,7 +80,7 @@ void send_RPM(uint8_t port, uint16_t RPM)
    SBUS2_transmit_telemetry_data( port , bytes);
 }
 
-void send_temp125(int16_t temp)
+/*void send_temp125(int16_t temp)
 {
    int16_t value=  0;
    uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
@@ -89,7 +89,7 @@ void send_temp125(int16_t temp)
    bytes[1] = value >> 8;
    bytes[2] = value;
    SBUS2_transmit_telemetry_data( temperaturePort , bytes);
-}
+}*/
 
 void send_temp125(uint8_t port, int16_t temp)
 {
@@ -102,7 +102,7 @@ void send_temp125(uint8_t port, int16_t temp)
    SBUS2_transmit_telemetry_data( port , bytes);
 }
 
-void send_alarm_as_temp125(int16_t alarm)
+/*void send_alarm_as_temp125(int16_t alarm)
 {
    int16_t value=  0;
    uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
@@ -111,7 +111,7 @@ void send_alarm_as_temp125(int16_t alarm)
    bytes[1] = value >> 8;
    bytes[2] = value;
    SBUS2_transmit_telemetry_data( alarmPort , bytes);
-}
+}*/
 
 void send_alarm_as_temp125(uint8_t port, int16_t alarm)
 {
@@ -124,7 +124,7 @@ void send_alarm_as_temp125(uint8_t port, int16_t alarm)
    SBUS2_transmit_telemetry_data( port , bytes);
 }
 
-void send_s1678_current(uint16_t current, uint16_t capacity, uint16_t voltage)
+/*void send_s1678_current(uint16_t current, uint16_t capacity, uint16_t voltage)
 {
    uint16_t value = 0;
    uint32_t local = 0;
@@ -158,7 +158,7 @@ void send_s1678_current(uint16_t current, uint16_t capacity, uint16_t voltage)
    bytes[1] = value >> 8;
    bytes[2] = value;
    SBUS2_transmit_telemetry_data( currentPort+2 , bytes);
-}
+}*/
 
 void send_s1678_current(uint8_t port, uint16_t current, uint16_t capacity, uint16_t voltage)
 {
@@ -196,14 +196,88 @@ void send_s1678_current(uint8_t port, uint16_t current, uint16_t capacity, uint1
    SBUS2_transmit_telemetry_data( port+2 , bytes);
 }
 
-void do_servo_pulse_callback(uint32_t counter)
+void send_f1675_gps(uint8_t port, uint16_t speed, int16_t altitude, int16_t vario, int32_t latitude, int32_t longitude)
+{
+   uint16_t value1 = 0;
+   int16_t  value2 = 0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+ 
+   
+   // SPEED
+   value1 = speed | 0x4000;
+   if ( value1 > 0x43E7 )
+   {
+      // max Speed is 999 km/h
+      value1 = 0x43E7;
+   }  
+   bytes[1] = value1 >> 8;
+   bytes[2] = value1;
+   SBUS2_transmit_telemetry_data( port , bytes);
+
+   //HIGHT
+   value2 = altitude | 0x4000;
+   bytes[1] = value2 >> 8;
+   bytes[2] = value2;
+   SBUS2_transmit_telemetry_data( port+1 , bytes);
+
+   //TIME -> 12:30 ? MSBit Unix?
+   bytes[1] = 0x0C;
+   bytes[2] = 0x1E;
+   SBUS2_transmit_telemetry_data( port+2 , bytes);
+
+   // VARIO
+   value2 = vario * 10;   
+   bytes[1] = value2 >> 8;
+   bytes[2] = value2;
+   SBUS2_transmit_telemetry_data( port+3 , bytes);
+
+   // LATITUDE
+   bytes[1] = (uint8_t)(latitude/1000000);
+   //bytes[1] = 0x34;         // 52°
+   value1 = (uint16_t)(latitude%1000000);
+   if(latitude >= 0){
+    bytes[2] = ((value1 >> 12) & 0x0f);    // North
+   }
+   else{
+    bytes[2] = ((value1 >> 12) & 0x1f);    // South
+   }
+   //bytes[2] = 0x07;         // N (0x0X) or S (0x1X)
+   SBUS2_transmit_telemetry_data( port+4 , bytes);
+
+   bytes[1] = ((value1 >> 8) & 0xff);
+   //bytes[1] = 0xF2;
+   bytes[2] = value1 & 0xff;
+   //bytes[2] = 0x71;
+   SBUS2_transmit_telemetry_data( port+5 , bytes);
+
+   // LONGITUDE
+   bytes[1] = (uint8_t)(longitude/1000000);
+   //bytes[1] = 0x0D;         // 13°
+   value1 = (uint16_t)(longitude%1000000);
+   if(longitude >= 0){
+    bytes[2] = ((value1 >> 12) & 0x0f);    // Eath
+   }
+   else{
+    bytes[2] = ((value1 >> 12) & 0x1f);    // West
+   }
+   //bytes[2] = 0x06;         // E (0x0X) or W (0x1X)
+   SBUS2_transmit_telemetry_data( port+6 , bytes);
+
+   bytes[1] = ((value1 >> 8) & 0xff);
+   //bytes[1] = 0x3E;
+   bytes[2] = value1 & 0xff;
+   //bytes[2] = 0xF0;
+   SBUS2_transmit_telemetry_data( port+7 , bytes);
+}
+
+/*void do_servo_pulse_callback(uint32_t counter)
 {
    do_servo_pulse = true;
    absTime = counter;
-}
+}*/
 
 
-void SBUS2_loop()
+/*void SBUS2_loop()
 {
    int16_t channel = 0;
    uint16_t uart_dropped_frame = false;
@@ -230,9 +304,9 @@ void SBUS2_loop()
                             (uint16_t)10);	    //Voltage   [V]
       }
    }
-}
+}*/
 
-bool SBUS2_Ready()
+/*bool SBUS2_Ready()
 {
   if (do_servo_pulse)
    {
@@ -242,7 +316,4 @@ bool SBUS2_Ready()
    else{
     return false;
    }
-  
-}
-
-
+}*/

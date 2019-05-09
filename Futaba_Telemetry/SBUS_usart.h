@@ -23,12 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <avr/io.h>
 
-#define NUMBER_OF_CHANNELS 16
+#define NUMBER_OF_CHANNELS 18
 
-void SBUS2_uart_setup(void (*start_pulse)(uint32_t counter));
+void SBUS2_uart_setup(/*void (*start_pulse)(uint32_t counter)*/);
 void SBUS2_transmit_telemetry_data( uint8_t slot, uint8_t data[3] );
-bool SBUS2_get_all_servo_data( uint16_t channels[NUMBER_OF_CHANNELS] );
+//bool SBUS2_get_all_servo_data( uint16_t channels[NUMBER_OF_CHANNELS] );
 int16_t SBUS2_get_servo_data( uint8_t channel);
 void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_frame, bool *failsave );
+bool SBUS2_Ready();
 
 #endif

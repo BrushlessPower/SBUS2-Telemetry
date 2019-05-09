@@ -40,17 +40,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UART_RXBUFSIZE  30
 #define FRAME_TIME_OUT  200 //ms
 
-#define SLOT_TIME 90		
-#define SLOT_TIME2 165		
+#define SLOT_TIME1 90		
+#define SLOT_TIME 165
+#define WAIT_TIME 250
+#define TIMEOUT   (248.0 * (FRAME_TIME_OUT / 1000.0))    		
 
 
-uint8_t  swaps_slot_bits[8] = {0,4,2,6,1,5,3,7};
+uint8_t   swaps_slot_bits[8] =  {0,4,2,6,1,5,3,7};
+uint8_t   Slot_ID[32] = {   0x03, 0x83, 0x43, 0xC3, 0x23, 0xA3, 0x63, 0xE3,
+                            0x13, 0x93, 0x53, 0xD3, 0x33, 0xB3, 0x73, 0xF3,
+                            0x0B, 0x8B, 0x4B, 0xCB, 0x2B, 0xAB, 0x6B, 0xEB,
+                            0x1B, 0x9B, 0x5B, 0xDB, 0x3B, 0xBB, 0x7B, 0xFB
+                        };
    
 uint8_t toggle  = 0;   
 
 // 248 is around 1 ms
-uint8_t  transmit_sequence_timer[15] = {250,250,SLOT_TIME2,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,226,226,226,226,180};
-uint8_t  receive_timeout_timer = ( uint8_t ) (248.0 * (FRAME_TIME_OUT / 1000.0));
+//uint8_t  transmit_sequence_timer[15] = {250,250,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,SLOT_TIME,226,226,226,226,180};
+//uint8_t  receive_timeout_timer = ( uint8_t ) (248.0 * (FRAME_TIME_OUT / 1000.0));
+uint16_t channels[NUMBER_OF_CHANNELS];
 
 uint16_t overflow_counter = 0; // should not occur
 
@@ -77,6 +85,7 @@ volatile uint8_t         frameLength = 15;
 volatile int8_t          previousFrame = 0;
 volatile uint32_t        frameCounter = 0;
 
+volatile bool           transmit = false;
 
 volatile uint8_t        tx_data_counter;
 volatile uint8_t        buffer_index;
@@ -93,16 +102,18 @@ void disable_receiving();
 void start_transmit_sequencer(uint8_t frame_number);
 void sbus2_send_slot(uint8_t slot);
 
+bool SBUS2_get_all_servo_data();
+
 void ISR_receive_timeout();
 void ISR_transmit();
 
-volatile void    (*do_servo_pulls)(uint32_t counter);
+//volatile void    (*do_servo_pulls)(uint32_t counter);
 
 volatile void    (*timer_ISR)();
 
 //*****************************************************************************
 //
-void SBUS2_uart_setup (void (*start_pulse)(uint32_t))
+void SBUS2_uart_setup (/*void (*start_pulse)(uint32_t)*/)
 {
    uint32_t counter  = 640000;
    uint8_t  response = 0x00;
@@ -124,7 +135,7 @@ void SBUS2_uart_setup (void (*start_pulse)(uint32_t))
      counter--;
    }      
           
-   do_servo_pulls =  (volatile void    (*)(uint32_t))start_pulse;     
+   //do_servo_pulls =  (volatile void    (*)(uint32_t))start_pulse;     
    start_receiving();
    
    if(response != 0x55 )
@@ -183,7 +194,7 @@ void sbus_timer_init()
    TCCR2A = 0x02;        //Timer2 Control Reg A: CTC
 }
 
-uint8_t SBUS_get_frame(uint8_t *frame)
+/*uint8_t SBUS_get_frame(uint8_t *frame)
 {
    if( frame_ready )
    {
@@ -195,7 +206,7 @@ uint8_t SBUS_get_frame(uint8_t *frame)
    {
       return false;
    }
-}
+}*/
 
 void start_receiving()
 {
@@ -203,7 +214,8 @@ void start_receiving()
    buffer_index = 0;
    timer_ISR = (volatile void    (*)())ISR_receive_timeout;
    TCNT2  = 0;           //Reset Timer 0
-   OCR2A = receive_timeout_timer; 
+   //OCR2A = receive_timeout_timer; // eigentlich quatsch
+   OCR2A = TIMEOUT;
 }
 
 inline void disable_receiving()
@@ -238,9 +250,14 @@ inline void IncreaseTimer( int8_t frameNumber)
 
 ISR (USART_RX_vect)
 {
+  //digitalWrite(13, HIGH);       // Debug
    uint8_t cdata = 0;
-   frame_ready = false;
-   TCNT2  = 0; //Reset Timer 2 for new usart time of char
+   if(transmit == false){
+    TCNT2  = 0; //Reset Timer 2 for new usart time of char
+    frame_ready = false;
+    //digitalWrite(13, LOW);
+   }
+   
    //enable Timer2 Control Reg B: for receive timeout this is done here because we can only start the timeout after first bye is received
    
 #if F_CPU == 16000000L
@@ -255,16 +272,21 @@ ISR (USART_RX_vect)
    if (buffer_index == SBUS_FRAME_SIZE)
    {
       frame_ready = true;
+      //digitalWrite(13, HIGH);
       disable_receiving();
       IncreaseTimer((cdata&0x30) >> 4);
       start_transmit_sequencer(((cdata&0x30) >> 4)); // frame number needed to select correct telemetry slot
 
-      if (do_servo_pulls != NULL )
+      /*if (do_servo_pulls != NULL )
       {
          do_servo_pulls(frameCounter * frameLength);
-      }
+      }*/
       buffer_index = 0;
+      //digitalWrite(13, HIGH);       // Debug
+      SBUS2_get_all_servo_data();
+      //digitalWrite(13, LOW);       // Debug
    } 
+   //digitalWrite(13, LOW);       // Debug
 }
 
 
@@ -283,20 +305,24 @@ void ISR_transmit()
    static  uint8_t sequence_count = 1; // first sequence step delay will be filled in when the transmit sequence is enabled
    //Increments the interrupt counter
    TCNT2  = 0; // reset at the beginning so that  there is no delay for the next segment of the sequence
-
-   interrupts();
+   digitalWrite(10, HIGH);       // Debug 
+   //digitalWrite(13, HIGH);       // Debug
+   //interrupts();
 
    if (sequence_count < 2 )
    {
       // don't do anything this is delay to the transmission slots
-      OCR2A = transmit_sequence_timer[sequence_count];
+      //OCR2A = transmit_sequence_timer[sequence_count];
+      OCR2A = WAIT_TIME;
+      transmit = true;
    }
    else if (sequence_count < 10 ) // transmit slots
    {
-      OCR2A = transmit_sequence_timer[sequence_count]; // first set next slot interrupt
+      //OCR2A = transmit_sequence_timer[sequence_count]; // first set next slot interrupt
+      OCR2A = SLOT_TIME;
       sbus2_send_slot((sequence_count-2) + (gl_current_frame * NUMBER_OF_SLOT_IN_FRAME) );
    }
-   else if (sequence_count < 11 )
+   /*else if (sequence_count < 11 )
    {
       OCR2A = transmit_sequence_timer[sequence_count];
 
@@ -312,17 +338,22 @@ void ISR_transmit()
       OCR2A = transmit_sequence_timer[sequence_count];
       frame_ready = false;  // this will give  ms to collect the servo data
       buffer_index = 0;
-   }
+   }*/
    else
    {
+      //frame_ready = false;  // this will give  ms to collect the servo data
+      transmit = false;
+      buffer_index = 0;
       // reset transmit sequencer
       TCCR2B = 0x00;        //Disbale Timer2 while we set it up
       sequence_count = 0;  // first sequence step delay will be filled in when the transmit sequence is enabled
       enable_receiving();
       start_receiving();
+      //digitalWrite(13, LOW);       // Debug
    }
    sequence_count++;
    TIFR2 = 0x00;          //Timer2 INT Flag Reg: Clear Timer Overflow Flag
+   digitalWrite(10, LOW);       // Debug
 };
 
 ISR(TIMER2_OVF_vect)
@@ -337,7 +368,8 @@ void start_transmit_sequencer(uint8_t frame_number)
    //set transmit ISR
    timer_ISR = (volatile void    (*)())ISR_transmit;
 
-   OCR2A  = transmit_sequence_timer[0]; //set first delay value
+   //OCR2A  = transmit_sequence_timer[0]; //set first delay value
+   OCR2A = WAIT_TIME;
    
 #if F_CPU == 16000000L
   TCCR2B = 0x04;     // 16MHz clock
@@ -370,7 +402,7 @@ void sbus2_send_slot(uint8_t slot)
 
 ISR (USART_TX_vect)
 {
-   interrupts();
+   //interrupts();
    if (transmit_data_per_slot_status[gl_slot] != EMPTY) 
    {
       if ( tx_data_counter < SLOT_DATA_LENGTH ) 
@@ -389,20 +421,21 @@ ISR (USART_TX_vect)
 
 void SBUS2_transmit_telemetry_data( uint8_t slot, uint8_t data[SLOT_DATA_LENGTH] )
 {
-   uint8_t swapped_slot = 0;
+   //uint8_t swapped_slot = 0;
    if ( transmit_data_per_slot_status[slot] != TRANSMITTING )
    {
       //swap slot ID
-      swapped_slot = swaps_slot_bits[slot % 8] << 5;
+      //swapped_slot = swaps_slot_bits[slot % 8] << 5;
       memcpy( (void*)transmit_data_per_slot_data[slot], data, SLOT_DATA_LENGTH);
-      transmit_data_per_slot_data[slot][0] &= 0x1F; // reset frame slot ID
-      transmit_data_per_slot_data[slot][0] |= swapped_slot;
+      //transmit_data_per_slot_data[slot][0] &= 0x1F; // reset frame slot ID
+      //transmit_data_per_slot_data[slot][0] |= swapped_slot;
+      transmit_data_per_slot_data[slot][0] = Slot_ID[slot];
 
       transmit_data_per_slot_status[slot] = AVAILABLE;
    }
 }
 
-bool SBUS2_get_all_servo_data( uint16_t channels[16] )
+bool SBUS2_get_all_servo_data( /*uint16_t channels[18]*/ )
 {
    if ( frame_ready )
    {
@@ -460,7 +493,7 @@ bool SBUS2_get_all_servo_data( uint16_t channels[16] )
       {
          channels[17] = 0;
       }
-
+      //frame_ready = false;
       return true;
    }
    else
@@ -483,7 +516,8 @@ void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_fra
 
 int16_t SBUS2_get_servo_data( uint8_t channel )
 {
-   uint8_t byte_in_sbus = 1;
+  digitalWrite(13, HIGH);       // Debug
+/*   uint8_t byte_in_sbus = 1;
    uint16_t bit_in_sbus = 0;
    uint8_t ch = 0;
    uint16_t bit_in_channel = 0;
@@ -523,12 +557,34 @@ int16_t SBUS2_get_servo_data( uint8_t channel )
             ch++;
          }
       }
+      //frame_ready = false;
+      digitalWrite(13, LOW);       // Debug
       return (int16_t)servo;
    }
    else
    {
+    digitalWrite(13, LOW);       // Debug
       return -1;
    }
+*/
+  delay(1);
+  digitalWrite(13, LOW);       // Debug
+
+  if(channel < NUMBER_OF_CHANNELS){
+    return channels[channel];
+  }
+  else{
+    return -1;
+  }
 }
 
-
+bool SBUS2_Ready()
+{
+  if (frame_ready)
+   {
+    return true;
+   }
+   else{
+    return false;
+   }
+}
