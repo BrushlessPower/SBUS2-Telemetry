@@ -27,12 +27,7 @@ Arduino Library for receiving SBUS and SBUS2 Frames and transmit Telemetry Data 
 
 ### Inverter Schematic
 
-SBUS2       ---  --- 1K <---Inverter <--- TXD/D1
-
-          |       
-          |
-          -------> Inverter ---> RXD/D0
-
+![correct inverter](https://github.com/BrushlessPower/SBUS2-Telemetry/blob/master/SBUS2_inverter.png)
 
 
 ## Version
