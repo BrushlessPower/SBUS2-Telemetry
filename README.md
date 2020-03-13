@@ -46,6 +46,25 @@ There are 32 different Telemetry Slots available
 - After you set up all your Favorit Sensors in your Radio, you can #define the used Slot's in the Sketch
 - Take a look which Radio support which Sensor  ![PDF](https://github.com/BrushlessPower/SBUS2-Telemetry/blob/master/futaba-sensors.pdf)
 
+### Structure
+You can use every Sensor as often you want. But you have a maximum of 31 Sensor Slots
+If yo want to have multiple Temp Sensors, just change the Slot Number:
+ - send_temp125(TEMPRATURE_SLOT1, (int16_t)50);
+ - send_temp125(TEMPRATURE_SLOT2, (int16_t)80);
+ - send_temp125(TEMPRATURE_SLOT3, (int16_t)20);
+ - send_temp125(TEMPRATURE_SLOT4, (int16_t)999);
+- The same for all other Sensors
+The Sensor Values are updated with your Loop() cycle time.
+ - If your loop() contains a Delay(2000), your Telemetry Data will be updated every 2sek
+ - If your loop() has no Delay's, your Telemetry Data will be updated every 60ms (every 4 SBUS Frames)
+ - The Servo Channel Data is updated every 15ms (with every new SBUS(2) Frame)
+ 
+## Stand alone SBUS Library
+This Library can be used just for getting Servo Channel Data. The Library just send telemetry Data to SBUS2 compatible Receiver.
+ - SBUS_Ready() -> True when new Servo data is received with SBUS and SBUS2 Frames
+ - SBUS2_Ready() -> True when SBUS2 Frames are received
+ - SBUS2_get_status() will also work with just SBUS Frames
+
 
 ## Supported Sensors
 - Temp125 -> Temperatures from -16384°C to + 16383°C
