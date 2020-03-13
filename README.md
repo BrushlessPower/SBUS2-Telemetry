@@ -105,8 +105,9 @@ The Futaba Telemetry Protocol has very hard Timings:
 - So you have to receive the SBUS Frame in a UART Interrupt
 - And with the Last Byte of the Frame you have to Start a Timer with 2ms
 - With every Timer Interrupt you have to set the next Timer Interrupt to 660µs
-- If the Timer doesn't in this conditions, you do not need to start developing the Slot transmission
+- If the Timer doesn't work in this conditions, you do not need to start developing the Slot data transmission
 - You need to have a Logic Analyser or Oscilloscope
+- The best way is to toggle some Pins to check the correct timing
 - SBUS(2) Level Voltage is 3,3V -> Do not work with 5V Level Signals!
 
 ## Aditional Informations about Futaba's SBUS and SBUS2
