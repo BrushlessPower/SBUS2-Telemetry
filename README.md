@@ -70,6 +70,7 @@ This Library can be used just for getting Servo Channel Data. The Library just s
 - Temp125 -> Temperatures from -16384°C to + 16383°C
 - SBS/01TE -> Temperatures from -16384°C to + 16383°C
 - F1713 -> Temperatures from -16384°C to + 16383°C
+- SBS/01T -> Temperatures from -100°C to + 32667°C
 - SBS-01RM -> Rotations per Minute (RPM) from 0 to 393210
 - SBS/01RB -> Rotations per Minute (RPM) from 0 to 393210
 - SBS-01RO -> Rotations per Minute (RPM) from 0 to 393210
