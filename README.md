@@ -24,9 +24,11 @@ Please use Softserial instead.
   
 ## Setting up a custom Sketch
 You can't set every Sensor to every Slot!
-There are Sensors which use 1 Slot and other Sensors use 3 or 8 Slots
-After receiving the SBUS Frame it's possible to transmit 8 Telemetry Slots
-There are 32 different Telemetry Slots available
+There are Sensors which use 1 Slot and other Sensors use 3 or 8 Slots.
+
+After receiving the SBUS Frame it's possible to transmit 8 Telemetry Slots.
+
+There are 32 different Telemetry Slots available.
 
 ### Example
 - Slot 0 is always RX Voltage-> So you cant use Slot0 for custom Sensors
@@ -76,14 +78,14 @@ This Library can be used just for getting Servo Channel Data. The Library just s
 - SBS-01RO -> Rotations per Minute (RPM) from 0 to 393210
 - Curr-1678 -> Voltage (0V to 655.3V) / Current (0A to 163.0A) / Capacity Sensor (0mAh to 32767 mAh)
 - F1678 -> Voltage (0V to 655.3V) / Current (0A to 163.0A) / Capacity Sensor (0mAh to 32767 mAh)
-- GPS-1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276,8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
-- F1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276,8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
-- SBS/01V -> comming soon
-- F1672 -> comming soon
-- F1712 -> comming soon
+- GPS-1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276.8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
+- F1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276.8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
+- SBS/01V -> Voltage (0V to 819.1V) / Voltage (0V to 819.1V)
+- F1672 -> Vario (-327.6m/s to +327.6m/s) / Altitude (-16384m to +16383m)
+- F1712 -> Vario (-3276,8m/s to +3276.7m/s) / Altitude (-16384m to +16383m)
 
 
-## Unsupported Sensors
+## Unsupported Sensors: ![Issues](https://github.com/BrushlessPower/SBUS2-Telemetry/issues)
 - SBS-01G
 - SBS/01S
 - SBS-0 1 TAS
@@ -156,6 +158,8 @@ The Futaba Telemetry Protocol has very hard Timings:
 
 1.0     Pre-Release
 
+1.0     Release
+
 
 ## Original Code for Atmel Studio 7
 https://bitbucket.org/iBartk/multisensor/overview
@@ -165,4 +169,6 @@ Author: Bart Keser
 Project: Castle Creation Telemetry to Futaba Telemetry Converter
 
 Ported to Arduino by BrushlessPower
+
+Special Thanks to Alex K. and his ![Development](https://sites.google.com/site/sbus2diy/home)
 
