@@ -55,6 +55,8 @@ static volatile bool      telemetry_ready = false;
 static volatile bool      sbus_ready = false;
 static volatile uint8_t   gl_current_frame = 0;
 static volatile uint16_t  uart_lost_frame = 0;
+static volatile uint8_t   FER_count = 0;
+static volatile uint8_t   FER_buf[100];
 
 typedef enum
 {
@@ -413,6 +415,20 @@ void SBUS2_get_all_servo_data()
   else{
     channels[17] = 0;
   }
+  if (sbusData[23] & 0x04){
+    FER_buf[FER_count] = 1;
+    FER_count ++;
+    if(FER_count > 99){
+      FER_count = 0;
+    }
+  }
+  else{
+    FER_buf[FER_count] = 0;
+    FER_count ++;
+    if(FER_count > 99){
+      FER_count = 0;
+    }
+  }
 }
 
 
@@ -423,8 +439,8 @@ void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_fra
       uart_lost_frame = 0;
    }
    *uart_dropped_frame = uart_lost_frame;
-   *transmision_dropt_frame = rxbuf[23] & 0x20 ? true : false;
-   *failsave = rxbuf[23] & 0x10 ? true : false;
+   *transmision_dropt_frame = sbusData[23] & 0x04 ? true : false;
+   *failsave = sbusData[23] & 0x08 ? true : false;
 }
 
 int16_t SBUS2_get_servo_data( uint8_t channel )
@@ -457,4 +473,20 @@ bool SBUS2_Ready()
    else{
     return false;
    }
+}
+
+uint8_t SBUS_get_FER(){
+  uint8_t fer = 0;
+  for(uint8_t i = 0; i<100; i++){
+    if(FER_buf[i] == 1){
+      fer++;
+    }
+  }
+  return fer;
+}
+
+uint8_t SBUS_get_RSSI(){
+  uint8_t rssi = SBUS_get_FER();
+  rssi = 100 - rssi;
+  return rssi;
 }

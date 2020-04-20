@@ -26,5 +26,7 @@ int16_t SBUS2_get_servo_data( uint8_t channel);
 void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_frame, bool *failsave );
 bool SBUS2_Ready();
 bool SBUS_Ready();
+uint8_t SBUS_get_FER();
+uint8_t SBUS_get_RSSI();
 
 #endif
