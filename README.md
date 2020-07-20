@@ -1,7 +1,14 @@
 # SBUS2-Telemetry Library
-Arduino Library for receiving SBUS and SBUS2 Frames and transmit Telemetry Data with Atmega328P MCU
-The Library uses the U(S)ART Interrupt and Timer2 -> You can't use Serial in your Sketch!
-Please use Softserial instead.
+Arduino Library for receiving SBUS and SBUS2 Frames and transmit Telemetry Data 
+
+- with Atmega328P MCU
+  - The Library uses the U(S)ART Interrupt and Timer2
+  - **You can't use Serial in your Sketch! Please use Softserial instead.**
+- with ESP32
+  - The Library uses Serial1 (UART_NUM_1) and TIMER_1 in TIMER_GROUP_0
+  - RX1 = GPIO_NUM_25 and TX1 = GPIO_NUM_26
+  - Serial, Timer and RX/TX Pins can be changed
+
 
 ## Setting up the Example Sketch
 - Before you start flashing and coding, please Setup you Futaba Radio Control
@@ -12,11 +19,15 @@ Please use Softserial instead.
   - See #defines in the example Sketch -> #define TEMPRATURE_SLOT   1 
   - Set Slot1 (Inactive) to Temp125 Sensor
   - Do the same with all other Sensors defined in the Example Sketch
-- Now build up you Arduino Hardware
+- Build up you Arduino Hardware with Atmega328P
   - Build your Inverter Circuit
   - Flash the Sktech -> On Arduino Pro Mini you must flash without attached Inverter!
   - Attach The Inverter to RX and TX on the Arduino Board
   - Attach the Inverter to SBUS2 Port on your Receiver
+- Build up you Arduino Hardware with ESP32
+  - Place 1k between your RX1 and TX1 Pins
+  - Attach the SBUS2 Port to RX1 Pin
+  - Flash the Sktech
 - Power up
   - You can power your Futaba Receiver from Arduino (5V)
   - Or you power your Arduino from Futaba Receiver (BEC)
@@ -110,13 +121,15 @@ This Library can be used just for getting Servo Channel Data. The Library just s
 ## Supported MCU
 - Arduino Pro Mini 8MHz (with external Inverters)
 - Arduino Pro Mini 16MHz (with external Inverters)
-- ESP32 (https://github.com/BrushlessPower/SBUS2-Telemetry-ESP32)
+- ESP32
 - ...
 
 
-## Inverter Schematic
+## Inverter Schematic for Atmega328P (Arduino Pro mini)
 
 ![correct inverter](https://github.com/BrushlessPower/SBUS2-Telemetry/blob/master/SBUS2_inverter.png)
+
+
 
 
 ## Guide for Library Development
@@ -160,15 +173,12 @@ The Futaba Telemetry Protocol has very hard Timings:
 
 1.0     Release
 
+1.1     ESP32 Support
 
-## Original Code for Atmel Studio 7
-https://bitbucket.org/iBartk/multisensor/overview
 
-Author: Bart Keser
+## Credentials
 
-Project: Castle Creation Telemetry to Futaba Telemetry Converter
+Bart Keser with his [Castle Creation Telemetry to Futaba Telemetry Converter](https://bitbucket.org/iBartk/multisensor/src/master/)
 
-Ported to Arduino by BrushlessPower
-
-Special Thanks to Alex K. and his ![Development](https://sites.google.com/site/sbus2diy/home)
+Alex K. and his [Development](https://sites.google.com/site/sbus2diy/home)
 
