@@ -12,11 +12,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef _SBUS2_USART_H
-#define _SBUS2_USART_H
-
-#include <avr/io.h>
+#include <Arduino.h>
 
 #define NUMBER_OF_CHANNELS 18
 
@@ -28,5 +24,3 @@ bool SBUS2_Ready();
 bool SBUS_Ready();
 uint8_t SBUS_get_FER();
 uint8_t SBUS_get_RSSI();
-
-#endif

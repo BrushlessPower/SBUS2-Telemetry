@@ -14,10 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#if !defined(_SBUS2_H)
-#define _SBUS2_H
-
-#include <avr/io.h>
+#include <Arduino.h>
 
 void SBUS2_Setup();    
 uint8_t SBUS2_get_FER();
@@ -97,5 +94,3 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int8
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, float latitude, float longitude);
 // Decimal Degrees as Integer -> 52520832
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int32_t latitude, int32_t longitude);
-
-#endif  //_SBUS2_H
