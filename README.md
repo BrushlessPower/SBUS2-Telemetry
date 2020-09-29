@@ -175,6 +175,8 @@ The Futaba Telemetry Protocol has very hard Timings:
 
 1.1     ESP32 Support
 
+1.2     Available in Arduino Library Manager
+
 
 ## Credentials
 
