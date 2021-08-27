@@ -17,10 +17,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define NUMBER_OF_CHANNELS 18
 
 void SBUS2_uart_setup();
+
+// Pin select Function just for ESP32
+void SBUS2_uart_setup(int rx, int tx);
+void SBUS2_uart_setup(int rx, int tx, int uart);
+
+void SBUS2_enable_simulation();
+void SBUS2_disable_simulation();
+
 void SBUS2_transmit_telemetry_data( uint8_t slot, uint8_t data[3] );
 int16_t SBUS2_get_servo_data( uint8_t channel);
 void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_frame, bool *failsave );
 bool SBUS2_Ready();
 bool SBUS_Ready();
+bool SBUS2_Ready(bool reset);
+bool SBUS_Ready(bool reset);
 uint8_t SBUS_get_FER();
 uint8_t SBUS_get_RSSI();
+
+void SBUS2_print_Raw();
+bool SBUS2_get_Slot(uint8_t slot, uint8_t *lowbyte, uint8_t *highbyte);
+
+// Enable and Disable SBUS Interrupts -> only for ESP32
+void SBUS_disable();
+void SBUS_enable();
+void SBUS2_disable();
+void SBUS2_enable();

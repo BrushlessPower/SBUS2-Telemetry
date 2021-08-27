@@ -17,7 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include "SBUS_usart.h"
 
-void SBUS2_Setup();    
+void SBUS2_Setup();  
+void SBUS2_Setup(int rx, int tx); 
+void SBUS2_Setup(int rx, int tx, int uart);  
+
+void SBUS2_Simulation();  
+void SBUS2_Simulation(int rx, int tx); 
+void SBUS2_Simulation(int rx, int tx, int uart);  
+ 
 uint8_t SBUS2_get_FER();
 uint8_t SBUS2_get_RSSI();    
 

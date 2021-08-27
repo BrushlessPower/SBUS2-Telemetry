@@ -24,6 +24,34 @@ void SBUS2_Setup()
   SBUS2_uart_setup();
 }
 
+void SBUS2_Setup(int rx, int tx)
+{
+  SBUS2_uart_setup(rx,tx);
+}
+
+void SBUS2_Setup(int rx, int tx, int uart)
+{
+  SBUS2_enable_simulation();
+  SBUS2_uart_setup(rx,tx,uart);
+}
+
+void SBUS2_Simulation()
+{
+  SBUS2_enable_simulation();
+  SBUS2_uart_setup();
+}
+
+void SBUS2_Simulation(int rx, int tx)
+{
+  SBUS2_enable_simulation();
+  SBUS2_uart_setup(rx,tx);
+}
+
+void SBUS2_Simulation(int rx, int tx, int uart)
+{
+  SBUS2_uart_setup(rx,tx,uart);
+}
+
 uint8_t SBUS2_get_FER(){
   uint8_t fer = SBUS_get_FER();
   return fer;
@@ -159,12 +187,12 @@ void send_f1675_gps(uint8_t port, uint16_t speed, int16_t altitude, int16_t vari
 
    //HIGHT
    value2 = altitude | 0x4000;
-   if(value2 > 0x7FFF ){
-     value2 = 0x7FFF;  // max Speed is 999 km/h
+   /*if(value2 > 0x7FFF ){		// max = +16383
+     value2 = 0x7FFF;  
    }  
-   else if( value2 < 0xC000){
+   else if( value2 < 0xC000){	// min = -16384
      value2 = 0xC000;
-   }
+   }*/
    bytes[1] = value2 >> 8;
    bytes[2] = value2;
    SBUS2_transmit_telemetry_data( port+1 , bytes);

@@ -441,6 +441,7 @@ void SBUS2_get_status( uint16_t *uart_dropped_frame, bool *transmision_dropt_fra
       uart_lost_frame = 0;
    }
    *uart_dropped_frame = uart_lost_frame;
+   uart_lost_frame = 0;
    *transmision_dropt_frame = sbusData[23] & 0x04 ? true : false;
    *failsave = sbusData[23] & 0x08 ? true : false;
 }
@@ -472,6 +473,34 @@ bool SBUS2_Ready()
   if (telemetry_ready)
    {
     telemetry_ready = false;
+    return true;
+   }
+   else{
+    return false;
+   }
+}
+
+bool SBUS_Ready(bool reset)
+{
+  if (sbus_ready)   // Checking sbus_ready Flag
+   {
+	if(reset){
+		sbus_ready = false;
+    }
+    return true;
+   }
+   else{
+    return false;
+   }
+}
+
+bool SBUS2_Ready(bool reset)
+{
+  if (telemetry_ready)
+   {
+    if(reset){
+		telemetry_ready = false;
+    }
     return true;
    }
    else{

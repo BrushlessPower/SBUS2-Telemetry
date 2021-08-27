@@ -1,9 +1,8 @@
 #include <Arduino.h>
 #include <SBUS2.h>
 
-
 #define TEMPRATURE_SLOT   1     // 1 Slot Sensor
-#define RPM_SLOT          1     // 1 Slot Sensor
+#define RPM_SLOT          2     // 1 Slot Sensor
 #define CURRENT_SLOT      3     // 3 Slot Sensor
       //CURRENT_SLOT      4
       //CURRENT_SLOT      5
@@ -18,29 +17,25 @@
 int32_t latitude = 52312499;  // = N 52° 31.2499 = N 52.520833 = N 52° 31' 14.9988"
 int32_t longitude = 13245658; // = E 13° 24.5658 = E 13.409430 = E 13° 24' 33.9480"
 
-int16_t channel = 0;
 uint8_t FrameErrorRate = 0;
 
+
+
+
 void setup()
-{
-    // put your setup code here, to run once:
-    pinMode(16,OUTPUT);
-    digitalWrite(16,LOW);
-    
+{  
+  // put your setup code here, to run once:
+
 #if defined (ESP32)
-    Serial.begin(115200);
-    Serial.println("Setup SBUS2...");
+  Serial.begin(115200);
+  Serial.println("Setup SBUS2...");
 #endif // ESP32
 
-    SBUS2_Setup(25,26);
-    //SBUS2_Setup();
-    
-#if defined (ESP32)
-    Serial.println("OK");
-#endif // ESP32
+  SBUS2_Setup(25,26);     // For ESP32 set RX and TX Pin Number
+  //SBUS2_Setup();        // Default Pin Number and Atmega328
 
-    while(!SBUS2_Ready()){
-      // Wait for valid SBUS2 Signal
+  while(!SBUS2_Ready()){
+    // Wait for valid SBUS2 Signal
 #if defined (ESP32)
     delay(2000);
     Serial.println("Wait for SBUS2");
@@ -54,46 +49,24 @@ void setup()
       send_f1672_vario(VARIO_SLOT, (int16_t) 0, (int16_t) 0);
       delay(50);
     }*/
-
 }
 
 void loop()
 {
+
     uint16_t uart_dropped_frame = 0;
     bool transmision_dropt_frame = false;
     bool failsave = false;
-    uint8_t lowbyte= 0;
-    uint8_t highbyte = 0;
-    uint16_t rpm = 0;
-
-    /* DO YOUR STUFF HERE */
+  /* DO YOUR STUFF HERE */
 #if defined (ESP32)
     delay(1000);
-    Serial.print("Servo Channel 2: ");
-    Serial.println(channel);
     Serial.print("Frame Error Rate: ");
     Serial.println(FrameErrorRate);
-    //SBUS2_print_Raw();
-    SBUS2_get_Slot(RPM_SLOT, &lowbyte, &highbyte);
-    rpm = ((highbyte << 8) | lowbyte) * 6;          // See send_RPM(uint8_t port, uint32_t RPM) calculation in SBUS2.cpp
-    Serial.print("Slot: ");
-    Serial.print(RPM_SLOT);
-    Serial.print(" LowByte: ");
-    Serial.print(lowbyte,HEX);
-    Serial.print(" HighByte: ");
-    Serial.print(highbyte,HEX);
-    Serial.print(" RPM: ");
-    Serial.println(rpm);
-#endif // ESP32
+#endif // ESP32   
 
-    if(SBUS_Ready(true)){                             // SBUS Frames available -> Ready for getting Servo Data
-      channel = SBUS2_get_servo_data( 2 );        // Channel = Servo Value of Channel 5
-    }
-  
-    
-    if(SBUS2_Ready(true)){                                                                                                // SBUS2 Frame available -> Ready for transmit Telemetry                                                                                    // set pin D13 (LED ON) -> SBUS2 Frames OK                                      
-      FrameErrorRate = SBUS2_get_FER();
-      
+    if(SBUS2_Ready()){                                    // SBUS2 Frame available -> Ready for transmit Telemetry  
+        
+      FrameErrorRate = SBUS2_get_FER();                   // get Frame Error Rate
       //send_temp125(TEMPRATURE_SLOT, (int16_t) 50);
       
       SBUS2_get_status(&uart_dropped_frame, &transmision_dropt_frame, &failsave);                                     // Check SBUS(2) Status
@@ -111,21 +84,19 @@ void loop()
           transmision_dropt_frame = false;
           failsave = false;
         }
-      
-  
+        
       //send_F1672(VARIO_SLOT , 1234, (float)23.45);                                                                    // Altitude = 1234m; Vario = 23,45 m/s; 
   
-      //send_f1675_gps(GPS_SLOT, (uint16_t)50, (int16_t)1000, (int16_t) 200, latitude, longitude);
-      Serial.println("send Telemetry");
+      //send_f1675_gps(GPS_SLOT, (uint16_t)50, (int16_t)1000, (int16_t) 200, latitude, longitude);                      // Speed = 50km/h, Altitude = 1000m, Vario = 200m/s, lat, lon
+      
       send_RPM(RPM_SLOT,(uint16_t)600);                                                                               // RPM = 600-> rounding Error +/- 3 RPM
-      send_s1678_current(CURRENT_SLOT,(uint16_t)2345,(uint16_t)15000,(uint16_t)1234);                                 // Current = 23.45A, Capacity = 15000mAh, Voltage = 12.34V
+      //send_s1678_current(CURRENT_SLOT,(uint16_t)2345,(uint16_t)15000,(uint16_t)1234);                                 // Current = 23.45A, Capacity = 15000mAh, Voltage = 12.34V
   
       //send_voltage(VOLTAGE_SLOT,(uint16_t)128, (uint16_t)255);                                                        // Voltage1 = 12.8V, Voltage2 = 25.5V
+      
     }
-    else
-    {
-        // No SBUS2 Frames
+    else{
+          // No SBUS2 Frames
     }
-
 
 } // End of Loop()
