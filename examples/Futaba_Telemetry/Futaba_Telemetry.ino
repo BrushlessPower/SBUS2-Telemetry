@@ -121,6 +121,20 @@ void loop()
       send_s1678_current(CURRENT_SLOT,(uint16_t)2345,(uint16_t)15000,(uint16_t)1234);                                 // Current = 23.45A, Capacity = 15000mAh, Voltage = 12.34V
   
       //send_voltage(VOLTAGE_SLOT,(uint16_t)128, (uint16_t)255);                                                        // Voltage1 = 12.8V, Voltage2 = 25.5V
+
+      // Select Port 8, 16 or 24
+      // example below is 
+      // 2110 => 21.1V
+      // 1330 => 1.33 Ah used
+      // 600 => 600 RPM 
+      // 2345 = Current 23.45A
+      // 30 = Temp 30 degress
+      // 25 = BecTemp 25 degress
+      // 1345 = BecCurrent 13.45 degress
+      // 54 = 54% PWM
+      // Send Scorpion and Kontronik
+      //   send_scorpion(8, (uint16_t) 2110, (uint16_t) 1330, (uint16_t)600, (uint16_t)2345, (uint16_t) 30, (uint16_t) 25, (uint16_t)1345, (uint16_t) 54);
+      //   send_kontronik(16, (uint16_t) 2110, (uint16_t) 1330, (uint16_t)600, (uint16_t)2345, (uint16_t) 30, (uint16_t) 25, (uint16_t)1345, (uint16_t) 54);
     }
     else
     {
