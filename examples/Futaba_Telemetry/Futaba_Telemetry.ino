@@ -133,8 +133,11 @@ void loop()
       // 1345 = BecCurrent 13.45 degress
       // 54 = 54% PWM
       // Send Scorpion and Kontronik
-         send_scorpion(24, (uint16_t) 2110, (uint16_t) 1330, (uint16_t)600, (uint16_t)2345, (uint16_t) 30, (uint16_t) 25, (uint16_t)1345, (uint16_t) 54);
+      //   send_scorpion(24, (uint16_t) 2110, (uint16_t) 1330, (uint16_t)600, (uint16_t)2345, (uint16_t) 30, (uint16_t) 25, (uint16_t)1345, (uint16_t) 54);
       //   send_kontronik(16, (uint16_t) 2110, (uint16_t) 1330, (uint16_t)600, (uint16_t)2345, (uint16_t) 30, (uint16_t) 25, (uint16_t)1345, (uint16_t) 54);
+
+      send_jetcat(8, (uint32_t) 1234, (uint16_t) 1234, (uint16_t) 1234, (uint32_t) 1234, (uint16_t) 1234, (uint16_t) 1234, (uint16_t) 56, (uint16_t) 1234, (uint16_t) 98, (uint16_t) 1234, (uint16_t) 1234, (uint16_t) 234, (uint16_t) 0, (uint32_t) 666);
+      
     }
     else
     {

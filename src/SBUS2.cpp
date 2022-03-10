@@ -562,3 +562,119 @@ void send_kontronik(
     becCurrent,
     pwm);
 }
+
+void send_jetcat(
+  uint8_t port, 
+  uint32_t rpm,
+  uint16_t egt,
+  uint16_t pump_volt,
+  uint32_t setrpm,
+  uint16_t thrust,
+  uint16_t fuel,
+  uint16_t fuelflow,
+  uint16_t altitude,
+  uint16_t quality,
+  uint16_t volt,
+  uint16_t current,
+  uint16_t speed,
+  uint16_t status,
+  uint32_t secondrpm) 
+{
+   uint32_t value = 0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+
+   // Actual RPM with 0x4000 Offset -> why?
+   value = rpm / 100; 
+   value = value | 0x4000;
+   if(value > 0xffff){
+    value = 0xffff;
+   }
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
+   
+   // EGT Abgastemperatur in °C
+   value = egt;
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 1 , bytes);
+   
+   // Pump Voltage 12.34V = 1234
+   value = pump_volt;
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 2 , bytes);
+   
+   // Setpoint RPM without Offset
+   value = setrpm / 100; 
+   if(value > 0xffff){
+    value = 0xffff;
+   }
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 3 , bytes);
+   
+   // Thrust 123.4N = 1234
+   value = thrust; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 4 , bytes);
+   
+   // Fuel (remain) in ml
+   value = fuel; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 5 , bytes);
+   
+   // Fuel Flow in ml/min
+   value = fuelflow; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 6 , bytes);
+   
+   // Altitude -> without offset?
+   value = altitude; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 7 , bytes);
+   
+   // Fuel Quality in %
+   value = quality; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 8 , bytes);
+   
+   // Voltage 12.34V = 1234
+   value = volt;
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 9 , bytes);
+   
+   // Current 123.4A = 1234
+   value = current; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 10 , bytes);
+   
+   // Speed in km/h
+   value = speed; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 11 , bytes);
+   
+   // Status and Error Code
+   value = status; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 12 , bytes);
+   
+   // Second RPM without Offset
+   value = secondrpm / 100; 
+   if(value > 0xffff){
+    value = 0xffff;
+   }
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 13 , bytes);
+ 
+}

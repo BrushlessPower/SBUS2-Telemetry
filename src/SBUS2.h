@@ -112,3 +112,6 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int3
 
 void send_kontronik(uint8_t port,  uint16_t voltage, uint16_t capacity, uint32_t rpm, uint16_t current, uint16_t temp, uint16_t becTemp, uint16_t becCurrent, uint16_t pwm);
 void send_scorpion(uint8_t port,  uint16_t voltage, uint16_t capacity, uint32_t rpm, uint16_t current, uint16_t temp, uint16_t becTemp, uint16_t becCurrent, uint16_t pwm); 
+
+void send_jetcat(uint8_t port, uint32_t rpm, uint16_t egt, uint16_t pump_volt, uint32_t setrpm, uint16_t thrust, uint16_t fuel, uint16_t fuelflow, uint16_t altitude, uint16_t quality, uint16_t volt, uint16_t current, uint16_t speed, uint16_t status, uint32_t secondrpm);
+  
