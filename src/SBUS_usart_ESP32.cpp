@@ -17,13 +17,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "esp32-hal.h"
 #include "esp32-hal-uart.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "esp_task.h"
-#include "esp_task_wdt.h"
-#include "freertos/queue.h"
+//#include "freertos/FreeRTOS.h"
+//#include "freertos/event_groups.h"
+//#include "esp_task.h"
+//#include "esp_task_wdt.h"
+//#include "freertos/queue.h"
 #include "driver/uart.h"
-#include "driver/timer.h"
+#include <soc/uart_reg.h>
+#include <driver/timer.h>
+#include <soc/uart_struct.h>
+#include <soc/timer_group_struct.h>
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -123,11 +126,11 @@ uart_config_t uart_config = {
     .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
 
 timer_config_t timer_config = {
-      .alarm_en = true,        //Alarm Enable
-      .counter_en = false,      //If the counter is enabled it will start incrementing / decrementing immediately after calling timer_init()
+      .alarm_en = TIMER_ALARM_EN,        //Alarm Enable
+      .counter_en = TIMER_PAUSE,      //If the counter is enabled it will start incrementing / decrementing immediately after calling timer_init()
       .intr_type = TIMER_INTR_LEVEL,  //Is interrupt is triggered on timer’s alarm (timer_intr_mode_t)
       .counter_dir = TIMER_COUNT_UP,  //Does counter increment or decrement (timer_count_dir_t)
-      .auto_reload = true,      //If counter should auto_reload a specific initial value on the timer’s alarm, or continue incrementing or decrementing.
+      .auto_reload = TIMER_AUTORELOAD_EN,      //If counter should auto_reload a specific initial value on the timer’s alarm, or continue incrementing or decrementing.
       .divider = 80           //Divisor of the incoming 80 MHz (12.5nS) APB_CLK clock. E.g. 80 = 1uS per timer tick
     };
 
@@ -164,7 +167,11 @@ void SBUS2_uart_setup(int rx, int tx, int uart)
    tx_pin = tx;
    uart_num = (uart_port_t)uart;
    ESP_ERROR_CHECK(uart_param_config(uart_num, &uart_config));
-   ESP_ERROR_CHECK(uart_set_line_inverse(uart_num, UART_INVERSE_RXD|UART_INVERSE_TXD)); 
+#if(ESP_ARDUINO_VERSION_MAJOR == 2)
+   ESP_ERROR_CHECK(uart_set_line_inverse(uart_num, UART_SIGNAL_TXD_INV | UART_SIGNAL_RXD_INV));         // V2.0.0
+#else
+   ESP_ERROR_CHECK(uart_set_line_inverse(uart_num, UART_INVERSE_RXD | UART_INVERSE_TXD));                 // V1.6.0
+#endif
    ESP_ERROR_CHECK(uart_set_pin(uart_num, tx, rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
    gpio_set_pull_mode((gpio_num_t)rx, GPIO_PULLDOWN_ONLY);
    gpio_pulldown_en((gpio_num_t)rx);

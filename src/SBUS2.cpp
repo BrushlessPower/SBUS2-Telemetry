@@ -453,3 +453,112 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, floa
   _longitude = _longitude + ((_longitude_min * 60)/100);
   send_f1675_gps(port, speed, hight, vario, _latitude, _longitude);
 }
+
+void send_scorpion_kontronik(
+  uint8_t port, 
+  uint16_t voltage, 
+  uint16_t capacity, 
+  uint32_t rpm,
+  uint16_t current,
+  uint16_t temp,
+  uint16_t becTemp,
+  uint16_t becCurrent,
+  uint16_t pwm) 
+{
+   uint32_t value = 0;
+   uint8_t bytes[SBUS2_TEL_DATA_SIZE] = {0x03, 0x40, 0x00 };
+
+   // voltage 41.1 = 4110
+   value = voltage | 0x8000; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port , bytes);
+
+   // 1330 mah => 1.33 Ah
+   value = capacity; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 1 , bytes);
+
+   // 2250 rpm => 2250
+   value = rpm / 6; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 2 , bytes);
+
+   // 13310 => 133.1 A
+   value = current; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 3 , bytes);
+
+   // 41 => 41 Celsius
+   value = temp; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 4 , bytes);
+
+   // 21 => Bec Celsius
+   value = becTemp; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 5 , bytes);
+
+   // 650 => 6,5 Bec Current
+   value = becCurrent; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 6 , bytes);
+
+   // PWM output
+   value = pwm; 
+   bytes[1] = value >> 8;
+   bytes[2] = value;
+   SBUS2_transmit_telemetry_data( port + 7 , bytes);    
+}
+
+void send_scorpion(
+  uint8_t port, 
+  uint16_t voltage, 
+  uint16_t capacity, 
+  uint32_t rpm,
+  uint16_t current,
+  uint16_t temp,
+  uint16_t becTemp,
+  uint16_t becCurrent,
+  uint16_t pwm) 
+{
+   send_scorpion_kontronik(
+    port,
+    voltage,
+    capacity,
+    rpm,
+    current,
+    temp,
+    becTemp,
+    becCurrent,
+    pwm);
+}
+
+void send_kontronik(
+  uint8_t port, 
+  uint16_t voltage, 
+  uint16_t capacity, 
+  uint32_t rpm,
+  uint16_t current,
+  uint16_t temp,
+  uint16_t becTemp,
+  uint16_t becCurrent,
+  uint16_t pwm) 
+{
+   send_scorpion_kontronik(
+    port,
+    voltage,
+    capacity,
+    rpm,
+    current,
+    temp,
+    becTemp,
+    becCurrent,
+    pwm);
+}

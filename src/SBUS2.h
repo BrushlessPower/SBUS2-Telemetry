@@ -102,3 +102,13 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int8
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, float latitude, float longitude);
 // Decimal Degrees as Integer -> 52520832
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int32_t latitude, int32_t longitude);
+
+/*
+ * ++++++++++++++++++++++++++++++++
+ * ESC Sensors
+ * Note These sensors only exists on the newer Futaba Radios 18SZ, 16IZ, etc
+ * ++++++++++++++++++++++++++++++++
+ */
+
+void send_kontronik(uint8_t port,  uint16_t voltage, uint16_t capacity, uint32_t rpm, uint16_t current, uint16_t temp, uint16_t becTemp, uint16_t becCurrent, uint16_t pwm);
+void send_scorpion(uint8_t port,  uint16_t voltage, uint16_t capacity, uint32_t rpm, uint16_t current, uint16_t temp, uint16_t becTemp, uint16_t becCurrent, uint16_t pwm); 
