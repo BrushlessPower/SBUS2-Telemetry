@@ -91,13 +91,13 @@ This Library can be used just for getting Servo Channel Data. The Library just s
 - F1678 -> Voltage (0V to 655.3V) / Current (0A to 163.0A) / Capacity Sensor (0mAh to 32767 mAh)
 - GPS-1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276.8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
 - F1675 -> Speed (0km/h to 999km/h) / Altitude (-16384m to +16383m) / Vario (-3276.8m/s to +3276.7m/s) / LON&LAT (Degree Minutes)
+- SBS-01G -> Speed (0km/h to 511km/h) / Altitude (-820m to +4830m) / Vario (-150m/s to +260m/s) / LON&LAT (Degree Minutes)
 - SBS/01V -> Voltage (0V to 819.1V) / Voltage (0V to 819.1V)
 - F1672 -> Vario (-327.6m/s to +327.6m/s) / Altitude (-16384m to +16383m)
 - F1712 -> Vario (-3276,8m/s to +3276.7m/s) / Altitude (-16384m to +16383m)
 
 
 ## Unsupported Sensors: ![Issues](https://github.com/BrushlessPower/SBUS2-Telemetry/issues)
-- SBS-01G
 - SBS/01S
 - SBS-0 1 TAS
 - F1677

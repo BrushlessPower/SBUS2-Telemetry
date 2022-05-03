@@ -453,7 +453,92 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, floa
   _longitude = _longitude + ((_longitude_min * 60)/100);
   send_f1675_gps(port, speed, hight, vario, _latitude, _longitude);
 }
-
+void send_SBS10G(
+  uint8_t port,
+  uint16_t hours,          // 0 to 24
+  uint16_t minutes,        // 0 to 60
+  uint16_t seconds,        // 0 to 60
+  float latitude,          // decimal degrees (i.e. 52.520833; negative value for southern hemisphere)
+  float longitude,         // decimal degrees (i.e. 13.409430; negative value for western hemisphere)
+  float altitudeMeters,    // meters (valid range: -1050 to 4600)
+  uint16_t speed,          // km/h (valid range 0 to 511)
+  float gpsVario)          // m/s (valid range: -150 to 260)
+{
+   uint32_t utc = (hours*3600) + (minutes*60) + seconds;
+   uint32_t lat, lon;
+   // scale latitude/longitude (add 0.5 for correct rounding)
+   if (latitude > 0) {
+     lat = (600000.0*latitude) + 0.5;
+   }
+   else {
+     lat = (-600000.0*latitude) + 0.5;
+     // toggle south bit
+     lat |= 0x4000000;
+   }
+   if (longitude > 0) {
+     lon = (600000.0*longitude) + 0.5;
+   }
+   else {
+     lon = (-600000.0*longitude) + 0.5;
+     // toggle west bit
+     lon |= 0x8000000;
+   }
+   // convert altitude (add 0.5 for correct rounding)
+   uint16_t alt = (altitudeMeters>=-820 && altitudeMeters<=4830) ?(1.25*(altitudeMeters+820)) + 0.5  : 0;
+   // error check speed
+   if (speed < 512) {
+    // set speed enable bit
+    speed |= 0x200;
+   }
+   else {
+    speed = 0;
+   }
+   // initialize buffer
+   uint8_t bytes[3] = {0x03, 0x00, 0x00 };
+   // slot 0 (utc)
+   bytes[1] = (utc&0x00ff);
+   bytes[2] = (utc&0xff00)>>8;
+   SBUS2_transmit_telemetry_data(port , bytes);
+   // slot 1 (latitude & utc)
+   bytes[1] = ((lat&0x007f)<<1) | ((utc&0x10000)>>16);
+   bytes[2] =  (lat&0x7f80)>>7;
+   SBUS2_transmit_telemetry_data(port+1 , bytes);
+   // slot 2 (latitude & longitude)
+   bytes[1] =  (lat&0x07f8000)>>15;
+   bytes[2] = ((lat&0x7800000)>>23) | (lon&0x0f)<<4;
+   SBUS2_transmit_telemetry_data(port+2 , bytes);
+   // slot 3 (longitude)
+   bytes[1] = (lon&0x00ff0)>>4;
+   bytes[2] = (lon&0xff000)>>12;
+   SBUS2_transmit_telemetry_data(port+3 , bytes);
+   // slot 4 (longitude & speed)
+   bytes[1] = ((lon&0xff00000)>>20);
+   bytes[2] = (speed&0xff);
+   SBUS2_transmit_telemetry_data(port+4 , bytes);
+   // slot 5 (pressure & speed)
+   bytes[1] = ((speed&0x300)>>8);
+   bytes[2] = 0x00;
+   SBUS2_transmit_telemetry_data(port+5 , bytes);
+   // slot 6 (altitude & pressure)
+   bytes[1] = ((alt&0x003)<<6);
+   bytes[2] =  (alt&0x3fc)>>2;
+   SBUS2_transmit_telemetry_data(port+6 , bytes);
+   // slot (7 (vario & altitude)
+   uint16_t vario;
+   // error check vario
+   if (gpsVario >= -150 && gpsVario <= 260) {
+    // scale vario (add 0.5 for correct rounding)
+    vario = (10.0*(gpsVario + 150)) + 0.5;
+    // set vario enable
+    vario |= 0x1000;
+   }
+   else {
+    vario = 0;
+   }
+   bytes[1] = ((vario&0x001f)<<3) | ((alt&0x1c00)>>10);
+   bytes[2] =  (vario&0x1fe0)>>5;
+   SBUS2_transmit_telemetry_data(port+7 , bytes);
+}
 void send_scorpion_kontronik(
   uint8_t port, 
   uint16_t voltage, 
