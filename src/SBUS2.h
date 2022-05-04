@@ -102,6 +102,7 @@ void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int8
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, float latitude, float longitude);
 // Decimal Degrees as Integer -> 52520832
 void send_F1675(uint8_t port, uint16_t speed, int16_t hight, int16_t vario, int32_t latitude, int32_t longitude);
+void send_SBS10G(uint8_t port, uint16_t hours, uint16_t minutes, uint16_t seconds, float latitude, float longitude, float altitudeMeters, uint16_t speed, float gpsVario);
 
 /*
  * ++++++++++++++++++++++++++++++++
