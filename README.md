@@ -57,7 +57,7 @@ There are 32 different Telemetry Slots available.
 - First set all Sensors in your Futaba Radio Control
 - Your Futaba System will keep the things clear.
 - After you set up all your Favorit Sensors in your Radio, you can #define the used Slot's in the Sketch
-- Take a look which Radio support which Sensor  ![PDF](https://github.com/BrushlessPower/SBUS2-Telemetry/blob/master/futaba-sensors.pdf)
+- Take a look which Radio support which Sensor [PDF](https://github.com/BrushlessPower/SBUS2-Telemetry/blob/master/futaba-sensors.pdf)
 
 ### Structure
 You can use every Sensor as often you want. But you have a maximum of 31 Sensor Slots
@@ -97,7 +97,7 @@ This Library can be used just for getting Servo Channel Data. The Library just s
 - F1712 -> Vario (-3276,8m/s to +3276.7m/s) / Altitude (-16384m to +16383m)
 
 
-## Unsupported Sensors: ![Issues](https://github.com/BrushlessPower/SBUS2-Telemetry/issues)
+## Unsupported Sensors: [Issues](https://github.com/BrushlessPower/SBUS2-Telemetry/issues)
 - SBS/01S
 - SBS-0 1 TAS
 - F1677
